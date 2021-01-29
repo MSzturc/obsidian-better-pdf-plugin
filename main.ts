@@ -1,112 +1,140 @@
-import { App, Modal, Notice, Plugin, PluginSettingTab, Setting } from 'obsidian';
+import {Plugin, MarkdownRenderChild, App } from 'obsidian';
+import * as pdfjs from 'pdfjs-dist/build/pdf.js';
+import * as worker from 'pdfjs-dist/build/pdf.worker.entry.js';
 
-interface MyPluginSettings {
-	mySetting: string;
+
+interface PdfNodeParameters {
+	url: string;
+	page: number|Array<number>;
+	scale: number;
 }
 
-const DEFAULT_SETTINGS: MyPluginSettings = {
-	mySetting: 'default'
+class PDFRenderNode extends MarkdownRenderChild {
+
+	private canvas: HTMLCanvasElement;
+	private app: App;
+	private parameters: PdfNodeParameters;
+
+	constructor(
+		container: HTMLElement,
+		app: App,
+		parameters: PdfNodeParameters
+  ) {
+    super();
+		this.containerEl = container;
+		this.app = app;
+		this.parameters = parameters;
+
+		pdfjs.GlobalWorkerOptions.workerSrc = worker;
+  }
+
+  onload() {
+		var el = this.containerEl;
+
+		//Read & Validate Parameters
+		var url = this.parameters.url;
+
+		var pageNumbers = null;
+		if(typeof this.parameters.page === 'number'){
+			pageNumbers = [this.parameters.page];
+		} else {
+			pageNumbers = this.parameters.page;
+		}
+
+		if(pageNumbers === undefined) {
+			pageNumbers = [1];
+		}
+		console.log(pageNumbers);
+
+		var scale = this.parameters.scale;
+		if(scale === undefined || scale < 0.1 || scale > 10.0) {
+			scale = 1.0;
+		}
+
+		//Create Container for Pages
+		var canvasContainer = this.containerEl.createDiv();
+		canvasContainer.id = "pdf" + Math.floor(Math.random() * 10000000) + 1;
+
+		//Read Filebuffer
+		var fileStream = this.app.vault.adapter.readBinary(url)
+
+		fileStream.then(function(buffer) {
+			var loadingTask = pdfjs.getDocument(buffer);
+			loadingTask.promise.then(function(pdfjs) {
+
+
+				//Read pages
+				for (let index = 0; index < pageNumbers.length; index++) {
+					const pageNumber = pageNumbers[index];
+					pdfjs.getPage(pageNumber).then(function(page) {
+						
+						var canvas = canvasContainer.createEl('canvas');
+
+						var viewport = page.getViewport({ scale: scale, });
+						var context = canvas.getContext('2d');
+			
+						canvas.height = viewport.height;
+						canvas.width = viewport.width;
+			
+						var renderContext = {
+							canvasContext: context,
+							viewport: viewport,
+						};
+						page.render(renderContext);
+					}).catch((error) => {
+						el.createEl('h2', { text: error});
+					});
+				}
+
+			});
+		}).catch((error) => {
+			el.createEl('h2', { text: error});
+		});
+
+  }
+
+  onunload() {
+  }
 }
 
 export default class MyPlugin extends Plugin {
-	settings: MyPluginSettings;
 
 	async onload() {
-		console.log('loading plugin');
+		console.log('Better PDF loading...');
+		
+		this.registerMarkdownPostProcessor(async (el, ctx) => {
 
-		await this.loadSettings();
-
-		this.addRibbonIcon('dice', 'Sample Plugin', () => {
-			new Notice('This is a notice!');
-		});
-
-		this.addStatusBarItem().setText('Status Bar Text');
-
-		this.addCommand({
-			id: 'open-sample-modal',
-			name: 'Open Sample Modal',
-			// callback: () => {
-			// 	console.log('Simple Callback');
-			// },
-			checkCallback: (checking: boolean) => {
-				let leaf = this.app.workspace.activeLeaf;
-				if (leaf) {
-					if (!checking) {
-						new SampleModal(this.app).open();
-					}
-					return true;
-				}
-				return false;
+			// Find PDF Node
+			const nodes = el.querySelectorAll<HTMLPreElement>('pre[class*="language-pdf"]');
+			if (!nodes) {
+				return;
 			}
-		});
 
-		this.addSettingTab(new SampleSettingTab(this.app, this));
+			nodes.forEach(node => {
 
-		this.registerCodeMirror((cm: CodeMirror.Editor) => {
-			console.log('codemirror', cm);
-		});
+				// Get Parameters
+				let parameters: PdfNodeParameters = null;
+				try {
+					parameters = JSON.parse(node.innerText);
+					console.log(parameters);
+				} catch (e) {
+					console.log('Query was not valid JSON: ' + e.message);
+				}
 
-		this.registerDomEvent(document, 'click', (evt: MouseEvent) => {
-			console.log('click', evt);
-		});
+				//Remove old Representation
+				const root = node.parentElement;
+				root.removeChild(node);
 
-		this.registerInterval(window.setInterval(() => console.log('setInterval'), 5 * 60 * 1000));
+				//Create PDF Node
+				const child = new PDFRenderNode(root,app,parameters);
+				ctx.addChild(child);
+			});
+
+		})
+
 	}
 
 	onunload() {
 		console.log('unloading plugin');
-	}
-
-	async loadSettings() {
-		this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
-	}
-
-	async saveSettings() {
-		await this.saveData(this.settings);
-	}
-}
-
-class SampleModal extends Modal {
-	constructor(app: App) {
-		super(app);
-	}
-
-	onOpen() {
-		let {contentEl} = this;
-		contentEl.setText('Woah!');
-	}
-
-	onClose() {
-		let {contentEl} = this;
-		contentEl.empty();
-	}
-}
-
-class SampleSettingTab extends PluginSettingTab {
-	plugin: MyPlugin;
-
-	constructor(app: App, plugin: MyPlugin) {
-		super(app, plugin);
-		this.plugin = plugin;
-	}
-
-	display(): void {
-		let {containerEl} = this;
-
-		containerEl.empty();
-
-		containerEl.createEl('h2', {text: 'Settings for my awesome plugin.'});
-
-		new Setting(containerEl)
-			.setName('Setting #1')
-			.setDesc('It\'s a secret')
-			.addText(text => text
-				.setPlaceholder('Enter your secret')
-				.setValue('')
-				.onChange(async (value) => {
-					console.log('Secret: ' + value);
-					this.plugin.settings.mySetting = value;
-					await this.plugin.saveSettings();
-				}));
 	}
 }

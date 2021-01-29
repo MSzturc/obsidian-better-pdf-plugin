@@ -7,6 +7,11 @@
     "dev": "rollup --config rollup.config.js -w",
     "build": "rollup --config rollup.config.js"
   },
+  "build": {
+    "extraResources": [
+      "./pdf.js"
+    ]
+  },
   "keywords": [],
   "author": "",
   "license": "MIT",
@@ -19,5 +24,17 @@
     "rollup": "^2.32.1",
     "tslib": "^2.0.3",
     "typescript": "^4.0.3"
+  },
+  "dependencies": {
+    "@types/pdfjs-dist": "^2.1.7",
+    "canvas": "^2.6.1",
+    "fs": "^0.0.1-security",
+    "http": "^0.0.1-security",
+    "https": "^1.0.0",
+    "node-ensure": "^0.0.0",
+    "pdfjs-dist": "^2.6.347",
+    "url": "^0.11.0",
+    "webpack": "^5.18.0",
+    "zlib": "^1.0.5"
   }
 }

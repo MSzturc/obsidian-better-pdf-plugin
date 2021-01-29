@@ -1,10 +1,10 @@
 {
-	"id": "obsidian-sample-plugin",
-	"name": "Sample Plugin",
+	"id": "better-pdf-plugin",
+	"name": "Better PDF Plugin",
 	"version": "1.0.1",
 	"minAppVersion": "0.9.12",
-	"description": "This is a sample plugin for Obsidian. This plugin demonstrates some of the capabilities of the Obsidian API.",
-	"author": "Obsidian",
+	"description": "Goal of this Plugin in to implement a native PDF handling workflow",
+	"author": "MSzturc",
 	"authorUrl": "https://obsidian.md/about",
 	"isDesktopOnly": false
 }
