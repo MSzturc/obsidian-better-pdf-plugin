@@ -9,6 +9,14 @@ Goal of this Plugin in to implement a native PDF handling workflow in Obsidian
 - Hyperlink to PDF
 - Scale the size of PDF Pages to fit Note layout
 
+### Synthax
+
+|parameter|required|example|
+|--|--|--|
+|url  |yes  |**myPDF.pdf** or **subfolder/myPDF.pdf** 
+|page|optional (default = 1)| **1** or **[1,6,7,8]**
+|scale|optional (default = 1.0)| **0.5** for 50% size or **2.0** for 200% size
+
 ### Sample
 
 
@@ -16,3 +24,4 @@ Goal of this Plugin in to implement a native PDF handling workflow in Obsidian
 
 
 ![Sample](sample/Sample_Editor.png)
+
