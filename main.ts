@@ -57,6 +57,7 @@ class PDFRenderNode extends MarkdownRenderChild {
 
 		//Read Filebuffer
 		var fileStream = this.app.vault.adapter.readBinary(url)
+		var vaultName = this.app.vault.getName();
 
 		fileStream.then(function(buffer) {
 			var loadingTask = pdfjs.getDocument(buffer);
@@ -68,7 +69,11 @@ class PDFRenderNode extends MarkdownRenderChild {
 					const pageNumber = pageNumbers[index];
 					pdfjs.getPage(pageNumber).then(function(page) {
 						
-						var canvas = canvasContainer.createEl('canvas');
+						var href = canvasContainer.createEl('a');
+						href.href = url + '#page=' + pageNumber;
+						href.className = "internal-link";
+
+						var canvas = href.createEl('canvas');
 
 						var viewport = page.getViewport({ scale: scale, });
 						var context = canvas.getContext('2d');
