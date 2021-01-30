@@ -7,6 +7,7 @@ interface PdfNodeParameters {
 	url: string;
 	page: number|Array<number>;
 	scale: number;
+	rotation: number;
 }
 
 class PDFRenderNode extends MarkdownRenderChild {
@@ -51,6 +52,11 @@ class PDFRenderNode extends MarkdownRenderChild {
 			scale = 1.0;
 		}
 
+		var rotation = this.parameters.rotation;
+		if(rotation === undefined) {
+			rotation = 0;
+		}
+
 		//Create Container for Pages
 		var canvasContainer = this.containerEl.createDiv();
 		canvasContainer.id = "pdf" + Math.floor(Math.random() * 10000000) + 1;
@@ -75,7 +81,7 @@ class PDFRenderNode extends MarkdownRenderChild {
 
 						var canvas = href.createEl('canvas');
 
-						var viewport = page.getViewport({ scale: scale, });
+						var viewport = page.getViewport({ scale: scale, rotation: rotation });
 						var context = canvas.getContext('2d');
 			
 						canvas.height = viewport.height;
