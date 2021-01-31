@@ -8,6 +8,7 @@ interface PdfNodeParameters {
 	page: number|Array<number>;
 	scale: number;
 	rotation: number;
+	rect: Array<number>;
 }
 
 class PDFRenderNode extends MarkdownRenderChild {
@@ -57,6 +58,11 @@ class PDFRenderNode extends MarkdownRenderChild {
 			rotation = 0;
 		}
 
+		var rect = this.parameters.rect;
+		if(rect === undefined) {
+			rect = [0,0,0,0];
+		}
+
 		//Create Container for Pages
 		var canvasContainer = this.containerEl.createDiv();
 		canvasContainer.id = "pdf" + Math.floor(Math.random() * 10000000) + 1;
@@ -81,15 +87,24 @@ class PDFRenderNode extends MarkdownRenderChild {
 
 						var canvas = href.createEl('canvas');
 
-						var viewport = page.getViewport({ scale: scale, rotation: rotation });
+						var offsetX = rect[0]*-1;
+						var offsetY = rect[1]*-1;
+
+						var viewport = page.getViewport({ scale: scale, rotation: rotation, offsetX: offsetX, offsetY: offsetY });
 						var context = canvas.getContext('2d');
 			
-						canvas.height = viewport.height;
-						canvas.width = viewport.width;
-			
+						if(rect[2] < 1){
+							canvas.height = viewport.height;
+							canvas.width = viewport.width;
+						} else {
+							canvas.height = rect[2];
+							canvas.width = rect[3];
+						}
+						
 						var renderContext = {
 							canvasContext: context,
 							viewport: viewport,
+							renderInteractiveForms: true
 						};
 						page.render(renderContext);
 					}).catch((error) => {
