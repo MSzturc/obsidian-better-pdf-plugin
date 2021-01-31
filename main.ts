@@ -145,7 +145,16 @@ export default class MyPlugin extends Plugin {
 				// Get Parameters
 				let parameters: PdfNodeParameters = null;
 				try {
-					parameters = JSON.parse(node.innerText);
+
+					var rawText = node.innerText;
+
+					// "url" : [[file.pdf]] is an invalid json since it misses quotation marks in value
+					if(rawText.contains("[[") && !rawText.contains("\"[[")){
+						rawText = rawText.replace("[[","\"[[");
+						rawText = rawText.replace("]]","]]\"");
+					}
+
+					parameters = JSON.parse(rawText);
 					console.log(parameters);
 				} catch (e) {
 					console.log('Query was not valid JSON: ' + e.message);
