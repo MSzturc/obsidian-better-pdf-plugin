@@ -1,6 +1,6 @@
 {
   "name": "better-pdf-plugin",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Goal of this Plugin in to implement a native PDF handling workflow",
   "main": "main.js",
   "scripts": {

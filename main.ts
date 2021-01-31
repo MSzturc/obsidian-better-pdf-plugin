@@ -87,8 +87,8 @@ class PDFRenderNode extends MarkdownRenderChild {
 
 						var canvas = href.createEl('canvas');
 
-						var offsetX = rect[0]*-1;
-						var offsetY = rect[1]*-1;
+						var offsetX = Math.floor((rect[0]*-1) * scale);
+						var offsetY = Math.floor((rect[1]*-1) * scale);
 
 						var viewport = page.getViewport({ scale: scale, rotation: rotation, offsetX: offsetX, offsetY: offsetY });
 						var context = canvas.getContext('2d');
@@ -97,8 +97,8 @@ class PDFRenderNode extends MarkdownRenderChild {
 							canvas.height = viewport.height;
 							canvas.width = viewport.width;
 						} else {
-							canvas.height = rect[2];
-							canvas.width = rect[3];
+							canvas.height = Math.floor(rect[2] * scale);
+							canvas.width = Math.floor(rect[3] * scale);
 						}
 						
 						var renderContext = {
