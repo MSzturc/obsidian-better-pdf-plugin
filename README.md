@@ -11,6 +11,10 @@ Goal of this Plugin in to implement a native PDF handling workflow in Obsidian
 - Rotate PDF
 - Cutout PDF Parts
 
+### Demo
+
+![Sample](sample/BetterPDF.gif)
+
 ### Synthax
 
 |parameter|required|example|
