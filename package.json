@@ -1,16 +1,11 @@
 {
-  "name": "obsidian-sample-plugin",
-  "version": "0.9.7",
-  "description": "This is a sample plugin for Obsidian (https://obsidian.md)",
+  "name": "better-pdf-plugin",
+  "version": "1.0.1",
+  "description": "Goal of this Plugin in to implement a native PDF handling workflow",
   "main": "main.js",
   "scripts": {
     "dev": "rollup --config rollup.config.js -w",
     "build": "rollup --config rollup.config.js"
-  },
-  "build": {
-    "extraResources": [
-      "./pdf.js"
-    ]
   },
   "keywords": [],
   "author": "",
