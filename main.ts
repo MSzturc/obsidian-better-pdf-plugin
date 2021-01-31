@@ -35,6 +35,10 @@ class PDFRenderNode extends MarkdownRenderChild {
 
 		//Read & Validate Parameters
 		var url = this.parameters.url;
+		if(url.startsWith('[[')){
+			url = url.substr(2,url.length-4);
+			url = this.app.metadataCache.getFirstLinkpathDest(url,"").path;
+		}
 
 		var pageNumbers = null;
 		if(typeof this.parameters.page === 'number'){
