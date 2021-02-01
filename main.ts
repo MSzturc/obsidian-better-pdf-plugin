@@ -10,7 +10,7 @@ interface PdfNodeParameters {
   rect: Array<number>;
 }
 
-export default class MyPlugin extends Plugin {
+export default class BetterPDFPlugin extends Plugin {
   async onload() {
     console.log("Better PDF loading...");
 
@@ -29,14 +29,7 @@ export default class MyPlugin extends Plugin {
         // Get Parameters
         let parameters: PdfNodeParameters = null;
         try {
-          var rawText = node.innerText;
-
-          // "url" : [[file.pdf]] is an invalid json since it misses quotation marks in value
-          if (rawText.contains("[[") && !rawText.contains('"[[')) {
-            rawText = rawText.replace("[[", '"[[');
-            rawText = rawText.replace("]]", ']]"');
-          }
-          parameters = JSON.parse(rawText);
+          parameters = this.readParameters(node.innerText);
         } catch (e) {
           el.createEl("h2", { text: "PDF Parameters invalid: " + e.message });
         }
@@ -48,39 +41,6 @@ export default class MyPlugin extends Plugin {
         //Create PDF Node
         if (parameters !== null) {
           try {
-            //Read & Validate Parameters
-            var url = parameters.url;
-            if (url.startsWith("[[")) {
-              url = url.substr(2, url.length - 4);
-              url = this.app.metadataCache.getFirstLinkpathDest(url, "").path;
-            }
-
-            var pageNumbers = null;
-            if (typeof parameters.page === "number") {
-              pageNumbers = [parameters.page];
-            } else {
-              pageNumbers = parameters.page;
-            }
-
-            if (pageNumbers === undefined) {
-              pageNumbers = [1];
-            }
-
-            var scale = parameters.scale;
-            if (scale === undefined || scale < 0.1 || scale > 10.0) {
-              scale = 1.0;
-            }
-
-            var rotation = parameters.rotation;
-            if (rotation === undefined) {
-              rotation = 0;
-            }
-
-            var rect = parameters.rect;
-            if (rect === undefined) {
-              rect = [0, 0, 0, 0];
-            }
-
             //Create Container for Pages
             var canvasContainer = el.createDiv();
             canvasContainer.id =
@@ -88,25 +48,31 @@ export default class MyPlugin extends Plugin {
 
             //Read Document
             var vaultName = this.app.vault.getName();
-            var buffer = await this.app.vault.adapter.readBinary(url);
+            var buffer = await this.app.vault.adapter.readBinary(
+              parameters.url
+            );
             var document = await pdfjs.getDocument(buffer).promise;
 
             //Read pages
-            for (let pageNumber of pageNumbers) {
+            for (let pageNumber of <number[]>parameters.page) {
               var page = await document.getPage(pageNumber);
 
               // Create hyperlink for Page
               var href = canvasContainer.createEl("a");
-              href.href = url + "#page=" + pageNumber;
+              href.href = parameters.url + "#page=" + pageNumber;
               href.className = "internal-link";
 
               // Get Viewport
-              var offsetX = Math.floor(rect[0] * -1 * scale);
-              var offsetY = Math.floor(rect[1] * -1 * scale);
+              var offsetX = Math.floor(
+                parameters.rect[0] * -1 * parameters.scale
+              );
+              var offsetY = Math.floor(
+                parameters.rect[1] * -1 * parameters.scale
+              );
 
               var viewport = page.getViewport({
-                scale: scale,
-                rotation: rotation,
+                scale: parameters.scale,
+                rotation: parameters.rotation,
                 offsetX: offsetX,
                 offsetY: offsetY,
               });
@@ -115,12 +81,16 @@ export default class MyPlugin extends Plugin {
               var canvas = href.createEl("canvas");
               var context = canvas.getContext("2d");
 
-              if (rect[2] < 1) {
+              if (parameters.rect[2] < 1) {
                 canvas.height = viewport.height;
                 canvas.width = viewport.width;
               } else {
-                canvas.height = Math.floor(rect[2] * scale);
-                canvas.width = Math.floor(rect[3] * scale);
+                canvas.height = Math.floor(
+                  parameters.rect[2] * parameters.scale
+                );
+                canvas.width = Math.floor(
+                  parameters.rect[3] * parameters.scale
+                );
               }
 
               var renderContext = {
@@ -135,6 +105,50 @@ export default class MyPlugin extends Plugin {
         }
       }
     });
+  }
+
+  private readParameters(jsonString: any) {
+    // "url" : [[file.pdf]] is an invalid json since it misses quotation marks in value
+    if (jsonString.contains("[[") && !jsonString.contains('"[[')) {
+      jsonString = jsonString.replace("[[", '"[[');
+      jsonString = jsonString.replace("]]", ']]"');
+    }
+
+    let parameters: PdfNodeParameters = JSON.parse(jsonString);
+
+    //Transform internal Link to external
+    if (parameters.url.startsWith("[[")) {
+      parameters.url = parameters.url.substr(2, parameters.url.length - 4);
+      parameters.url = this.app.metadataCache.getFirstLinkpathDest(
+        parameters.url,
+        ""
+      ).path;
+    }
+
+    //Convert Page to Array<Page>
+    if (typeof parameters.page === "number") {
+      parameters.page = [parameters.page];
+    }
+    if (parameters.page === undefined) {
+      parameters.page = [1];
+    }
+
+    if (
+      parameters.scale === undefined ||
+      parameters.scale < 0.1 ||
+      parameters.scale > 10.0
+    ) {
+      parameters.scale = 1.0;
+    }
+
+    if (parameters.rotation === undefined) {
+      parameters.rotation = 0;
+    }
+
+    if (parameters.rect === undefined) {
+      parameters.rect = [0, 0, 0, 0];
+    }
+    return parameters;
   }
 
   onunload() {
