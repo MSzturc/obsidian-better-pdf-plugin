@@ -11,7 +11,6 @@ interface PdfNodeParameters {
 }
 
 class PDFRenderNode extends MarkdownRenderChild {
-  private canvas: HTMLCanvasElement;
   private app: App;
   private parameters: PdfNodeParameters;
 
@@ -25,7 +24,6 @@ class PDFRenderNode extends MarkdownRenderChild {
   }
 
   async onload() {
-    var el = this.containerEl;
 
     try {
       //Read & Validate Parameters
@@ -110,7 +108,7 @@ class PDFRenderNode extends MarkdownRenderChild {
         await page.render(renderContext);
       }
     } catch (error) {
-      el.createEl("h2", { text: error });
+      this.containerEl.createEl("h2", { text: error });
     }
   }
 }
