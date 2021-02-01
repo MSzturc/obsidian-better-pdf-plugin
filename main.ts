@@ -78,37 +78,33 @@ class PDFRenderNode extends MarkdownRenderChild {
 
 		//Read pages
 		for (let pageNumber of pageNumbers){
-			document.getPage(pageNumber).then(function(page) {
-				
-				var href = canvasContainer.createEl('a');
-				href.href = url + '#page=' + pageNumber;
-				href.className = "internal-link";
+			var page = await document.getPage(pageNumber);	
+			var href = canvasContainer.createEl('a');
+			href.href = url + '#page=' + pageNumber;
+			href.className = "internal-link";
 
-				var canvas = href.createEl('canvas');
+			var canvas = href.createEl('canvas');
 
-				var offsetX = Math.floor((rect[0]*-1) * scale);
-				var offsetY = Math.floor((rect[1]*-1) * scale);
+			var offsetX = Math.floor((rect[0]*-1) * scale);
+			var offsetY = Math.floor((rect[1]*-1) * scale);
 
-				var viewport = page.getViewport({ scale: scale, rotation: rotation, offsetX: offsetX, offsetY: offsetY });
-				var context = canvas.getContext('2d');
-	
-				if(rect[2] < 1){
-					canvas.height = viewport.height;
-					canvas.width = viewport.width;
-				} else {
-					canvas.height = Math.floor(rect[2] * scale);
-					canvas.width = Math.floor(rect[3] * scale);
-				}
-				
-				var renderContext = {
-					canvasContext: context,
-					viewport: viewport,
-					renderInteractiveForms: true
-				};
-				page.render(renderContext);
-			}).catch((error) => {
-				el.createEl('h2', { text: error});
-			});
+			var viewport = page.getViewport({ scale: scale, rotation: rotation, offsetX: offsetX, offsetY: offsetY });
+			var context = canvas.getContext('2d');
+
+			if(rect[2] < 1){
+				canvas.height = viewport.height;
+				canvas.width = viewport.width;
+			} else {
+				canvas.height = Math.floor(rect[2] * scale);
+				canvas.width = Math.floor(rect[3] * scale);
+			}
+			
+			var renderContext = {
+				canvasContext: context,
+				viewport: viewport,
+				renderInteractiveForms: true
+			};
+			page.render(renderContext);
 		}
 
 	}
