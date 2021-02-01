@@ -43,7 +43,6 @@ class PDFRenderNode extends MarkdownRenderChild {
       if (pageNumbers === undefined) {
         pageNumbers = [1];
       }
-      console.log(pageNumbers);
 
       var scale = this.parameters.scale;
       if (scale === undefined || scale < 0.1 || scale > 10.0) {
@@ -149,13 +148,13 @@ export default class MyPlugin extends Plugin {
         root.removeChild(node);
 
         //Create PDF Node
-        const child = new PDFRenderNode(root, app, parameters);
+        const child = new PDFRenderNode(root, this.app, parameters);
         ctx.addChild(child);
       }
     });
   }
 
   onunload() {
-    console.log("unloading plugin");
+    console.log("unloading Better PDF plugin...");
   }
 }
