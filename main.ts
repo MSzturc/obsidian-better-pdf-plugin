@@ -73,13 +73,14 @@ class PDFRenderNode extends MarkdownRenderChild {
 
       //Read pages
       for (let pageNumber of pageNumbers) {
-        var page = await document.getPage(pageNumber);
+				var page = await document.getPage(pageNumber);
+				
+				// Create hyperlink for Page
         var href = canvasContainer.createEl("a");
         href.href = url + "#page=" + pageNumber;
         href.className = "internal-link";
 
-        var canvas = href.createEl("canvas");
-
+				// Get Viewport
         var offsetX = Math.floor(rect[0] * -1 * scale);
         var offsetY = Math.floor(rect[1] * -1 * scale);
 
@@ -88,7 +89,10 @@ class PDFRenderNode extends MarkdownRenderChild {
           rotation: rotation,
           offsetX: offsetX,
           offsetY: offsetY,
-        });
+				});
+
+				// Render Canvas
+				var canvas = href.createEl("canvas");
         var context = canvas.getContext("2d");
 
         if (rect[2] < 1) {
@@ -102,9 +106,8 @@ class PDFRenderNode extends MarkdownRenderChild {
         var renderContext = {
           canvasContext: context,
           viewport: viewport,
-          renderInteractiveForms: true,
         };
-        page.render(renderContext);
+        await page.render(renderContext);
       }
     } catch (error) {
       el.createEl("h2", { text: error });
