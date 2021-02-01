@@ -24,7 +24,6 @@ class PDFRenderNode extends MarkdownRenderChild {
   }
 
   async onload() {
-
     try {
       //Read & Validate Parameters
       var url = this.parameters.url;
@@ -70,14 +69,14 @@ class PDFRenderNode extends MarkdownRenderChild {
 
       //Read pages
       for (let pageNumber of pageNumbers) {
-				var page = await document.getPage(pageNumber);
-				
-				// Create hyperlink for Page
+        var page = await document.getPage(pageNumber);
+
+        // Create hyperlink for Page
         var href = canvasContainer.createEl("a");
         href.href = url + "#page=" + pageNumber;
         href.className = "internal-link";
 
-				// Get Viewport
+        // Get Viewport
         var offsetX = Math.floor(rect[0] * -1 * scale);
         var offsetY = Math.floor(rect[1] * -1 * scale);
 
@@ -86,10 +85,10 @@ class PDFRenderNode extends MarkdownRenderChild {
           rotation: rotation,
           offsetX: offsetX,
           offsetY: offsetY,
-				});
+        });
 
-				// Render Canvas
-				var canvas = href.createEl("canvas");
+        // Render Canvas
+        var canvas = href.createEl("canvas");
         var context = canvas.getContext("2d");
 
         if (rect[2] < 1) {
@@ -136,22 +135,20 @@ export default class MyPlugin extends Plugin {
             rawText = rawText.replace("[[", '"[[');
             rawText = rawText.replace("]]", ']]"');
           }
-					parameters = JSON.parse(rawText);
-					
+          parameters = JSON.parse(rawText);
         } catch (e) {
-					el.createEl("h2", { text: "PDF Parameters invalid: " + e.message });
+          el.createEl("h2", { text: "PDF Parameters invalid: " + e.message });
         }
 
         //Remove old Representation
         const root = node.parentElement;
         root.removeChild(node);
 
-				//Create PDF Node
-				if(parameters !== null) {
-					const child = new PDFRenderNode(root, this.app, parameters);
-        	ctx.addChild(child);
-				}
-        
+        //Create PDF Node
+        if (parameters !== null) {
+          const child = new PDFRenderNode(root, this.app, parameters);
+          ctx.addChild(child);
+        }
       }
     });
   }
