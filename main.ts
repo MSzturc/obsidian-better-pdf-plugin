@@ -121,10 +121,8 @@ class PDFRenderNode extends MarkdownRenderChild {
 			el.createEl('h2', { text: error});
 		});
 
-  }
-
-  onunload() {
-  }
+	}
+	
 }
 
 export default class MyPlugin extends Plugin {
