@@ -138,8 +138,7 @@ export default class MyPlugin extends Plugin {
 				return;
 			}
 
-			nodes.forEach(node => {
-
+			for (let node of nodes){
 				// Get Parameters
 				let parameters: PdfNodeParameters = null;
 				try {
@@ -165,9 +164,8 @@ export default class MyPlugin extends Plugin {
 				//Create PDF Node
 				const child = new PDFRenderNode(root,app,parameters);
 				ctx.addChild(child);
-			});
-
-		})
+			}
+		});
 
 	}
 
