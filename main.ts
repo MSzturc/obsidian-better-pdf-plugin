@@ -136,20 +136,22 @@ export default class MyPlugin extends Plugin {
             rawText = rawText.replace("[[", '"[[');
             rawText = rawText.replace("]]", ']]"');
           }
-
-          parameters = JSON.parse(rawText);
-          console.log(parameters);
+					parameters = JSON.parse(rawText);
+					
         } catch (e) {
-          console.log("Query was not valid JSON: " + e.message);
+					el.createEl("h2", { text: "PDF Parameters invalid: " + e.message });
         }
 
         //Remove old Representation
         const root = node.parentElement;
         root.removeChild(node);
 
-        //Create PDF Node
-        const child = new PDFRenderNode(root, this.app, parameters);
-        ctx.addChild(child);
+				//Create PDF Node
+				if(parameters !== null) {
+					const child = new PDFRenderNode(root, this.app, parameters);
+        	ctx.addChild(child);
+				}
+        
       }
     });
   }
