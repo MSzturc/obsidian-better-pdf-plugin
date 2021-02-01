@@ -77,8 +77,7 @@ class PDFRenderNode extends MarkdownRenderChild {
 		var document = await pdfjs.getDocument(buffer).promise;
 
 		//Read pages
-		for (let index = 0; index < pageNumbers.length; index++) {
-			const pageNumber = pageNumbers[index];
+		for (let pageNumber of pageNumbers){
 			document.getPage(pageNumber).then(function(page) {
 				
 				var href = canvasContainer.createEl('a');
