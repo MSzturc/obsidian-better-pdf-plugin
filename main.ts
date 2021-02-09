@@ -16,92 +16,69 @@ export default class BetterPDFPlugin extends Plugin {
 
     pdfjs.GlobalWorkerOptions.workerSrc = worker;
 
-    this.registerMarkdownPostProcessor(async (el, ctx) => {
-      // Find PDF Node
-      const nodes = el.querySelectorAll<HTMLPreElement>(
-        'pre[class*="language-pdf"]'
-      );
-      if (!nodes) {
-        return;
+    this.registerMarkdownCodeBlockProcessor("pdf", async (src, el, ctx) => {
+
+      // Get Parameters
+      let parameters: PdfNodeParameters = null;
+      try {
+        parameters = this.readParameters(src);
+      } catch (e) {
+        el.createEl("h2", { text: "PDF Parameters invalid: " + e.message });
       }
 
-      for (let node of nodes) {
-        // Get Parameters
-        let parameters: PdfNodeParameters = null;
+      //Create PDF Node
+      if (parameters !== null) {
         try {
-          parameters = this.readParameters(node.innerText);
-        } catch (e) {
-          el.createEl("h2", { text: "PDF Parameters invalid: " + e.message });
-        }
 
-        //Remove old Representation
-        const root = node.parentElement;
-        root.removeChild(node);
+          //Read Document
+          var vaultName = this.app.vault.getName();
+          var buffer = await this.app.vault.adapter.readBinary(parameters.url);
+          var document = await pdfjs.getDocument(buffer).promise;
 
-        //Create PDF Node
-        if (parameters !== null) {
-          try {
-            //Create Container for Pages
-            var canvasContainer = el.createDiv();
-            canvasContainer.id =
-              "pdf" + Math.floor(Math.random() * 10000000) + 1;
+          //Read pages
+          for (let pageNumber of <number[]>parameters.page) {
+            var page = await document.getPage(pageNumber);
 
-            //Read Document
-            var vaultName = this.app.vault.getName();
-            var buffer = await this.app.vault.adapter.readBinary(
-              parameters.url
+            // Create hyperlink for Page
+            var href = el.createEl("a");
+            href.href = parameters.url + "#page=" + pageNumber;
+            href.className = "internal-link";
+
+            // Get Viewport
+            var offsetX = Math.floor(
+              parameters.rect[0] * -1 * parameters.scale
             );
-            var document = await pdfjs.getDocument(buffer).promise;
+            var offsetY = Math.floor(
+              parameters.rect[1] * -1 * parameters.scale
+            );
 
-            //Read pages
-            for (let pageNumber of <number[]>parameters.page) {
-              var page = await document.getPage(pageNumber);
+            var viewport = page.getViewport({
+              scale: parameters.scale,
+              rotation: parameters.rotation,
+              offsetX: offsetX,
+              offsetY: offsetY,
+            });
 
-              // Create hyperlink for Page
-              var href = canvasContainer.createEl("a");
-              href.href = parameters.url + "#page=" + pageNumber;
-              href.className = "internal-link";
+            // Render Canvas
+            var canvas = href.createEl("canvas");
+            var context = canvas.getContext("2d");
 
-              // Get Viewport
-              var offsetX = Math.floor(
-                parameters.rect[0] * -1 * parameters.scale
-              );
-              var offsetY = Math.floor(
-                parameters.rect[1] * -1 * parameters.scale
-              );
-
-              var viewport = page.getViewport({
-                scale: parameters.scale,
-                rotation: parameters.rotation,
-                offsetX: offsetX,
-                offsetY: offsetY,
-              });
-
-              // Render Canvas
-              var canvas = href.createEl("canvas");
-              var context = canvas.getContext("2d");
-
-              if (parameters.rect[2] < 1) {
-                canvas.height = viewport.height;
-                canvas.width = viewport.width;
-              } else {
-                canvas.height = Math.floor(
-                  parameters.rect[2] * parameters.scale
-                );
-                canvas.width = Math.floor(
-                  parameters.rect[3] * parameters.scale
-                );
-              }
-
-              var renderContext = {
-                canvasContext: context,
-                viewport: viewport,
-              };
-              await page.render(renderContext);
+            if (parameters.rect[2] < 1) {
+              canvas.height = viewport.height;
+              canvas.width = viewport.width;
+            } else {
+              canvas.height = Math.floor(parameters.rect[2] * parameters.scale);
+              canvas.width = Math.floor(parameters.rect[3] * parameters.scale);
             }
-          } catch (error) {
-            el.createEl("h2", { text: error });
+
+            var renderContext = {
+              canvasContext: context,
+              viewport: viewport,
+            };
+            await page.render(renderContext);
           }
+        } catch (error) {
+          el.createEl("h2", { text: error });
         }
       }
     });
