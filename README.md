@@ -13,7 +13,7 @@ Goal of this Plugin in to implement a native PDF handling workflow in Obsidian
 
 ### Demo
 
-![Sample](sample/BetterPDF.gif)
+![Sample](https://github.com/MSzturc/obsidian-better-pdf-plugin/raw/master/sample/BetterPDF.gif)
 
 ### Synthax
 
