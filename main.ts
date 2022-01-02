@@ -4,7 +4,7 @@ import * as worker from "pdfjs-dist/build/pdf.worker.entry.js";
 
 interface PdfNodeParameters {
   url: string;
-  page: number | Array<number>;
+  page: number | Array<number | Array<number>>;
   scale: number;
   rotation: number;
   rect: Array<number>;
@@ -108,6 +108,17 @@ export default class BetterPDFPlugin extends Plugin {
     }
     if (parameters.page === undefined) {
       parameters.page = [1];
+    }
+
+    // Flatten ranges
+    for (let i = 0; i < parameters.page.length; i++) {
+      if (Array.isArray(parameters.page[i])) {
+        let range = parameters.page.splice(i, 1)[0] as Array<number>;
+        for (let j = range[0]; j <= range[1]; j++) {
+          parameters.page.splice(i, 0, j);
+          i += 1;
+        }
+      }
     }
 
     if (
