@@ -4,6 +4,7 @@ import * as worker from "pdfjs-dist/build/pdf.worker.entry.js";
 
 interface PdfNodeParameters {
   url: string;
+  link: boolean;
   page: number | Array<number | Array<number>>;
   scale: number;
   fit: boolean,
@@ -39,11 +40,16 @@ export default class BetterPDFPlugin extends Plugin {
           //Read pages
           for (let pageNumber of <number[]>parameters.page) {
             var page = await document.getPage(pageNumber);
+            var host = el;
 
             // Create hyperlink for Page
-            var href = el.createEl("a");
-            href.href = parameters.url + "#page=" + pageNumber;
-            href.className = "internal-link";
+            if (parameters.link) {
+              var href = el.createEl("a");
+              href.href = parameters.url + "#page=" + pageNumber;
+              href.className = "internal-link";
+
+              host = href;
+            }
 
             // Get Viewport
             var offsetX = Math.floor(
@@ -61,7 +67,7 @@ export default class BetterPDFPlugin extends Plugin {
             });
 
             // Render Canvas
-            var canvas = href.createEl("canvas");
+            var canvas = host.createEl("canvas");
             if (parameters.fit) {
               canvas.style.width = "100%";
             }
@@ -105,6 +111,10 @@ export default class BetterPDFPlugin extends Plugin {
         parameters.url,
         ""
       ).path;
+    }
+
+    if (parameters.link === undefined) {
+      parameters.link = false;
     }
 
     //Convert Page to Array<Page>
