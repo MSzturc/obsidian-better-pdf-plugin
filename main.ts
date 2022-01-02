@@ -6,6 +6,7 @@ interface PdfNodeParameters {
   url: string;
   page: number | Array<number>;
   scale: number;
+  fit: boolean,
   rotation: number;
   rect: Array<number>;
 }
@@ -61,6 +62,10 @@ export default class BetterPDFPlugin extends Plugin {
 
             // Render Canvas
             var canvas = href.createEl("canvas");
+            if (parameters.fit) {
+              canvas.style.width = "100%";
+            }
+
             var context = canvas.getContext("2d");
 
             if (parameters.rect[2] < 1) {
@@ -116,6 +121,10 @@ export default class BetterPDFPlugin extends Plugin {
       parameters.scale > 10.0
     ) {
       parameters.scale = 1.0;
+    }
+
+    if (parameters.fit === undefined) {
+      parameters.fit = true;
     }
 
     if (parameters.rotation === undefined) {
