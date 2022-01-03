@@ -1,4 +1,5 @@
 import { Plugin, MarkdownRenderChild, App } from "obsidian";
+import { BetterPdfSettings, BetterPdfSettingsTab } from "./settings";
 import * as pdfjs from "pdfjs-dist/build/pdf.js";
 import * as worker from "pdfjs-dist/build/pdf.worker.entry.js";
 
@@ -13,8 +14,13 @@ interface PdfNodeParameters {
 }
 
 export default class BetterPDFPlugin extends Plugin {
+  settings: BetterPdfSettings;
+
   async onload() {
     console.log("Better PDF loading...");
+
+    this.settings = Object.assign(new BetterPdfSettings(), await this.loadData());
+    this.addSettingTab(new BetterPdfSettingsTab(this.app, this));
 
     pdfjs.GlobalWorkerOptions.workerSrc = worker;
 
@@ -114,7 +120,7 @@ export default class BetterPDFPlugin extends Plugin {
     }
 
     if (parameters.link === undefined) {
-      parameters.link = false;
+      parameters.link = this.settings.link_by_default;
     }
 
     //Convert Page to Array<Page>
@@ -145,7 +151,7 @@ export default class BetterPDFPlugin extends Plugin {
     }
 
     if (parameters.fit === undefined) {
-      parameters.fit = true;
+      parameters.fit = this.settings.fit_by_default;
     }
 
     if (parameters.rotation === undefined) {
