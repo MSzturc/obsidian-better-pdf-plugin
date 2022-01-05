@@ -24,7 +24,7 @@ export default class BetterPDFPlugin extends Plugin {
 
     pdfjs.GlobalWorkerOptions.workerSrc = worker;
 
-    this.registerMarkdownCodeBlockProcessor("pdf", async (src, el, ctx) => {
+    this.registerMarkdownCodeBlockProcessor("pdf", async (src, el) => {
 
       // Get Parameters
       let parameters: PdfNodeParameters = null;
@@ -39,18 +39,17 @@ export default class BetterPDFPlugin extends Plugin {
         try {
 
           //Read Document
-          var vaultName = this.app.vault.getName();
-          var buffer = await this.app.vault.adapter.readBinary(parameters.url);
-          var document = await pdfjs.getDocument(buffer).promise;
+          const buffer = await this.app.vault.adapter.readBinary(parameters.url);
+          const document = await pdfjs.getDocument(buffer).promise;
 
           //Read pages
-          for (let pageNumber of <number[]>parameters.page) {
-            var page = await document.getPage(pageNumber);
-            var host = el;
+          for (const pageNumber of <number[]>parameters.page) {
+            const page = await document.getPage(pageNumber);
+            let host = el;
 
             // Create hyperlink for Page
             if (parameters.link) {
-              var href = el.createEl("a");
+              const href = el.createEl("a");
               href.href = parameters.url + "#page=" + pageNumber;
               href.className = "internal-link";
 
@@ -58,14 +57,14 @@ export default class BetterPDFPlugin extends Plugin {
             }
 
             // Get Viewport
-            var offsetX = Math.floor(
+            const offsetX = Math.floor(
               parameters.rect[0] * -1 * parameters.scale
             );
-            var offsetY = Math.floor(
+            const offsetY = Math.floor(
               parameters.rect[1] * -1 * parameters.scale
             );
 
-            var viewport = page.getViewport({
+            const viewport = page.getViewport({
               scale: parameters.scale,
               rotation: parameters.rotation,
               offsetX: offsetX,
@@ -73,12 +72,12 @@ export default class BetterPDFPlugin extends Plugin {
             });
 
             // Render Canvas
-            var canvas = host.createEl("canvas");
+            const canvas = host.createEl("canvas");
             if (parameters.fit) {
               canvas.style.width = "100%";
             }
 
-            var context = canvas.getContext("2d");
+            const context = canvas.getContext("2d");
 
             if (parameters.rect[2] < 1) {
               canvas.height = viewport.height;
@@ -88,7 +87,7 @@ export default class BetterPDFPlugin extends Plugin {
               canvas.width = Math.floor(parameters.rect[3] * parameters.scale);
             }
 
-            var renderContext = {
+            const renderContext = {
               canvasContext: context,
               viewport: viewport,
             };
@@ -108,7 +107,7 @@ export default class BetterPDFPlugin extends Plugin {
       jsonString = jsonString.replace("]]", ']]"');
     }
 
-    let parameters: PdfNodeParameters = JSON.parse(jsonString);
+    const parameters: PdfNodeParameters = JSON.parse(jsonString);
 
     //Transform internal Link to external
     if (parameters.url.startsWith("[[")) {
@@ -138,7 +137,7 @@ export default class BetterPDFPlugin extends Plugin {
     // Flatten ranges
     for (let i = 0; i < parameters.page.length; i++) {
       if (Array.isArray(parameters.page[i])) {
-        let range = parameters.page.splice(i, 1)[0] as Array<number>;
+        const range = parameters.page.splice(i, 1)[0] as Array<number>;
         for (let j = range[0]; j <= range[1]; j++) {
           parameters.page.splice(i, 0, j);
           i += 1;
