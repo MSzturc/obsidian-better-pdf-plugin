@@ -1,4 +1,5 @@
 import { Plugin, MarkdownRenderChild, App } from "obsidian";
+import { BetterPdfSettings, BetterPdfSettingsTab } from "./settings";
 import * as pdfjs from "pdfjs-dist/build/pdf.js";
 import * as worker from "pdfjs-dist/build/pdf.worker.entry.js";
 
@@ -13,8 +14,13 @@ interface PdfNodeParameters {
 }
 
 export default class BetterPDFPlugin extends Plugin {
+  settings: BetterPdfSettings;
+
   async onload() {
     console.log("Better PDF loading...");
+
+    this.settings = Object.assign(new BetterPdfSettings(), await this.loadData());
+    this.addSettingTab(new BetterPdfSettingsTab(this.app, this));
 
     pdfjs.GlobalWorkerOptions.workerSrc = worker;
 
@@ -67,7 +73,7 @@ export default class BetterPDFPlugin extends Plugin {
             });
 
             // Render Canvas
-            var canvas = href.createEl("canvas");
+            var canvas = host.createEl("canvas");
             if (parameters.fit) {
               canvas.style.width = "100%";
             }
@@ -114,14 +120,14 @@ export default class BetterPDFPlugin extends Plugin {
     }
 
     if (parameters.link === undefined) {
-      parameters.link = false;
+      parameters.link = this.settings.link_by_default;
     }
 
     //Convert Range (if present) and Page to Array<Page>
     if (parameters.range !== undefined) {
           parameters.page = Array.from({ length: parameters.range[1] - parameters.range[0] + 1 }, (_, i) => parameters.range[0] + i);
     }
-
+	
     if (typeof parameters.page === "number") {
       parameters.page = [parameters.page];
     }
@@ -149,7 +155,7 @@ export default class BetterPDFPlugin extends Plugin {
     }
 
     if (parameters.fit === undefined) {
-      parameters.fit = true;
+      parameters.fit = this.settings.fit_by_default;
     }
 
     if (parameters.rotation === undefined) {
