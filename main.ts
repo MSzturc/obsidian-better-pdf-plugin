@@ -5,8 +5,9 @@ import * as worker from "pdfjs-dist/build/pdf.worker.entry.js";
 interface PdfNodeParameters {
   url: string;
   link: boolean;
-  page: number | Array<number>;
+  page: number | Array<number | Array<number>>;
   scale: number;
+  fit: boolean,
   rotation: number;
   rect: Array<number>;
 }
@@ -66,7 +67,11 @@ export default class BetterPDFPlugin extends Plugin {
             });
 
             // Render Canvas
-            var canvas = host.createEl("canvas");
+            var canvas = href.createEl("canvas");
+            if (parameters.fit) {
+              canvas.style.width = "100%";
+            }
+
             var context = canvas.getContext("2d");
 
             if (parameters.rect[2] < 1) {
@@ -112,12 +117,27 @@ export default class BetterPDFPlugin extends Plugin {
       parameters.link = false;
     }
 
-    //Convert Page to Array<Page>
+    //Convert Range (if present) and Page to Array<Page>
+    if (parameters.range !== undefined) {
+          parameters.page = Array.from({ length: parameters.range[1] - parameters.range[0] + 1 }, (_, i) => parameters.range[0] + i);
+    }
+
     if (typeof parameters.page === "number") {
       parameters.page = [parameters.page];
     }
     if (parameters.page === undefined) {
       parameters.page = [1];
+    }
+
+    // Flatten ranges
+    for (let i = 0; i < parameters.page.length; i++) {
+      if (Array.isArray(parameters.page[i])) {
+        let range = parameters.page.splice(i, 1)[0] as Array<number>;
+        for (let j = range[0]; j <= range[1]; j++) {
+          parameters.page.splice(i, 0, j);
+          i += 1;
+        }
+      }
     }
 
     if (
@@ -126,6 +146,10 @@ export default class BetterPDFPlugin extends Plugin {
       parameters.scale > 10.0
     ) {
       parameters.scale = 1.0;
+    }
+
+    if (parameters.fit === undefined) {
+      parameters.fit = true;
     }
 
     if (parameters.rotation === undefined) {
