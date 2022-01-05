@@ -1,4 +1,4 @@
-import { Plugin, MarkdownRenderChild, App } from "obsidian";
+import { Plugin } from "obsidian";
 import { BetterPdfSettings, BetterPdfSettingsTab } from "./settings";
 import * as pdfjs from "pdfjs-dist/build/pdf.js";
 import * as worker from "pdfjs-dist/build/pdf.worker.entry.js";
