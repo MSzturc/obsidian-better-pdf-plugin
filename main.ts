@@ -123,7 +123,11 @@ export default class BetterPDFPlugin extends Plugin {
       parameters.link = this.settings.link_by_default;
     }
 
-    //Convert Page to Array<Page>
+    //Convert Range (if present) and Page to Array<Page>
+    if (parameters.range !== undefined) {
+          parameters.page = Array.from({ length: parameters.range[1] - parameters.range[0] + 1 }, (_, i) => parameters.range[0] + i);
+    }
+	
     if (typeof parameters.page === "number") {
       parameters.page = [parameters.page];
     }
