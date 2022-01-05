@@ -1,9 +1,10 @@
 import { Plugin } from "obsidian";
 import { BetterPdfSettings, BetterPdfSettingsTab } from "./settings";
-import * as pdfjs from "pdfjs-dist/build/pdf.js";
+import * as pdfjs from "pdfjs-dist";
 import * as worker from "pdfjs-dist/build/pdf.worker.entry.js";
 
 interface PdfNodeParameters {
+	range: Array<number>;
 	url: string;
 	link: boolean;
 	page: number | Array<number | Array<number>>;
@@ -101,7 +102,7 @@ export default class BetterPDFPlugin extends Plugin {
 		});
 	}
 
-	private readParameters(jsonString: any) {
+	private readParameters(jsonString: string) {
 		// "url" : [[file.pdf]] is an invalid json since it misses quotation marks in value
 		if (jsonString.contains("[[") && !jsonString.contains('"[[')) {
 			jsonString = jsonString.replace("[[", '"[[');
