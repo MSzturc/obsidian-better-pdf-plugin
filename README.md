@@ -26,4 +26,4 @@ Goal of this Plugin in to implement a native PDF handling workflow in Obsidian
 |scale|optional (default = 1.0)| **0.5** for 50% size or **2.0** for 200% size
 |fit|optional (default = true)| **true** or **false**
 |rotation|optional (default = 0)| **90** for 90deg or **-90** -90deg or **180**
-|rect|optional (default = \[0,0,0,0\])| offsetX, offsetY, sizeX, sizeX in Pixel
+|rect|optional (default = \[0,0,0,0\])| offsetX, offsetY, sizeY, sizeX in Pixel
