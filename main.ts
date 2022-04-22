@@ -44,6 +44,15 @@ export default class BetterPDFPlugin extends Plugin {
 					const buffer = Buffer.from(arrayBuffer);
 					const document = await pdfjs.getDocument(buffer).promise;
 
+					// page parameter as trigger for whole pdf, 0 = all pages
+					if ((<number[]>parameters.page).includes(0)){
+						var pagesArray = [];
+						for(var i = 1;i <= document.numPages; i++){
+							pagesArray.push(i);
+						}
+						parameters.page = pagesArray;
+					}
+
 					//Read pages
 					for (const pageNumber of <number[]>parameters.page) {
 						const page = await document.getPage(pageNumber);
