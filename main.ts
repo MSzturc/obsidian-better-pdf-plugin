@@ -1,4 +1,4 @@
-import { Plugin } from "obsidian";
+import { Plugin, TFile } from "obsidian";
 import { BetterPdfSettings, BetterPdfSettingsTab } from "./settings";
 import * as pdfjs from "pdfjs-dist";
 import * as worker from "pdfjs-dist/build/pdf.worker.entry.js";
@@ -25,8 +25,7 @@ export default class BetterPDFPlugin extends Plugin {
 
 		pdfjs.GlobalWorkerOptions.workerSrc = worker;
 
-		this.registerMarkdownCodeBlockProcessor("pdf", async (src, el) => {
-
+		this.registerMarkdownCodeBlockProcessor("pdf", async (src, el, ctx) => {
 			// Get Parameters
 			let parameters: PdfNodeParameters = null;
 			try {
@@ -37,8 +36,15 @@ export default class BetterPDFPlugin extends Plugin {
 
 			//Create PDF Node
 			if (parameters !== null) {
+				// console.log("Creating PDF Node with parameters: ", parameters);
 				try {
-
+					console.log(parameters.url);
+					if (parameters.url.startsWith("./")) {
+						// find the substring of path all the way to the last slash
+						const filePath = ctx.sourcePath;
+						const folderPath = filePath.substring(0, filePath.lastIndexOf("/"));
+						parameters.url = folderPath + "/" + parameters.url.substring(2, parameters.url.length);
+					}
 					//Read Document
 					const arrayBuffer = await this.app.vault.adapter.readBinary(parameters.url);
 					const buffer = Buffer.from(arrayBuffer);
