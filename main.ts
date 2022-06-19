@@ -49,6 +49,16 @@ export default class BetterPDFPlugin extends Plugin {
 					const arrayBuffer = await this.app.vault.adapter.readBinary(parameters.url);
 					const buffer = Buffer.from(arrayBuffer);
 					const document = await pdfjs.getDocument(buffer).promise;
+
+					// page parameter as trigger for whole pdf, 0 = all pages
+					if ((<number[]>parameters.page).includes(0)){
+						var pagesArray = [];
+						for(var i = 1;i <= document.numPages; i++){
+							pagesArray.push(i);
+						}
+						parameters.page = pagesArray;
+					}
+
 					//Read pages
 					for (const pageNumber of <number[]>parameters.page) {
 						const page = await document.getPage(pageNumber);
@@ -71,13 +81,6 @@ export default class BetterPDFPlugin extends Plugin {
 							parameters.rect[1] * -1 * parameters.scale
 						);
 
-						const viewport = page.getViewport({
-							scale: parameters.scale,
-							rotation: parameters.rotation,
-							offsetX: offsetX,
-							offsetY: offsetY,
-						});
-
 						// Render Canvas
 						const canvas = host.createEl("canvas");
 						if (parameters.fit) {
@@ -85,6 +88,16 @@ export default class BetterPDFPlugin extends Plugin {
 						}
 
 						const context = canvas.getContext("2d");
+
+						const baseViewportWidth = page.getViewport({scale: 1.0}).width;
+						const baseScale = canvas.clientWidth / baseViewportWidth;
+
+						const viewport = page.getViewport({
+							scale: baseScale * parameters.scale,
+							rotation: parameters.rotation,
+							offsetX: offsetX,
+							offsetY: offsetY,
+						});
 
 						if (parameters.rect[2] < 1) {
 							canvas.height = viewport.height;
