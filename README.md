@@ -15,7 +15,7 @@ Goal of this Plugin in to implement a native PDF handling workflow in Obsidian
 
 ![Sample](https://github.com/MSzturc/obsidian-better-pdf-plugin/raw/master/sample/BetterPDF.gif)
 
-### Synthax
+### Syntax
 
 |parameter|required|example|
 |--|--|--|
