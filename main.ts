@@ -90,7 +90,7 @@ export default class BetterPDFPlugin extends Plugin {
 						const context = canvas.getContext("2d");
 
 						const baseViewportWidth = page.getViewport({scale: 1.0}).width;
-						const baseScale = canvas.clientWidth / baseViewportWidth;
+						const baseScale = canvas.clientWidth ? canvas.clientWidth / baseViewportWidth : 1;
 
 						const viewport = page.getViewport({
 							scale: baseScale * parameters.scale,
