@@ -47,7 +47,7 @@ export default class BetterPDFPlugin extends Plugin {
 					}
 					//Read Document
 					const arrayBuffer = await this.app.vault.adapter.readBinary(parameters.url);
-					const buffer = Buffer.from(arrayBuffer);
+					const buffer = new Uint8Array(arrayBuffer);
 					const document = await pdfjs.getDocument(buffer).promise;
 
 					// page parameter as trigger for whole pdf, 0 = all pages
